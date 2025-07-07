@@ -28,12 +28,14 @@
 	let countdownStarted = $state(false);
 	let timerId: number | undefined = undefined;
 	let roundsFinished = $state("");
+	let numRoundsFinished = $state(0);
 
 	const handleClick = () => {
-		prompt = "starting the timer.";
 		countdownStarted = true;
 		countdownSeconds = setTime.minutes * 60 + setTime.seconds;
 		roundsFinished = "";
+		numRoundsFinished = 0;
+		prompt = "running...";
 		if (timerId) {
 			clearInterval(timerId);
 		}
@@ -43,7 +45,14 @@
 
 			if (countdownSeconds === 0) {
 				roundsFinished += "✅";
+				numRoundsFinished += 1;
 				countdownSeconds = setTime.minutes * 60 + setTime.seconds;
+
+				prompt = `${numRoundsFinished} === ${setsGoal}`;
+				if (numRoundsFinished == setsGoal) {
+					prompt = "done!";
+					clearInterval(timerId);
+				}
 			}
 		}, 1000);
 	};
@@ -67,6 +76,9 @@
 	minutes:
 	<span class="hl">{setTime.minutes}:{setTime.seconds}</span> per set. ({totalTime}
 	total.)
+</div>
+<div>
+	{prompt}
 </div>
 {#if countdownStarted}
 	<div id="running-countdown-info">
