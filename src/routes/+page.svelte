@@ -48,7 +48,6 @@
 				numRoundsFinished += 1;
 				countdownSeconds = setTime.minutes * 60 + setTime.seconds;
 
-				prompt = `${numRoundsFinished} === ${setsGoal}`;
 				if (numRoundsFinished == setsGoal) {
 					prompt = "done!";
 					clearInterval(timerId);
@@ -74,8 +73,8 @@
 	<span class="hl">{setsGoal}</span> sets in
 	<span class="hl">{timeGoal}</span>
 	minutes:
-	<span class="hl">{setTime.minutes}:{setTime.seconds}</span> per set. ({totalTime}
-	total.)
+	<span class="hl">{setTime.minutes}:{setTime.seconds}</span> per set (total: {totalTime}
+	s).
 </div>
 <div>
 	{prompt}
@@ -84,6 +83,9 @@
 	<div id="running-countdown-info">
 		<div>
 			{roundsFinished}
+			{#if numRoundsFinished > 0}
+				({numRoundsFinished})
+			{/if}
 		</div>
 		<div id="countdown-number">
 			{countdownSeconds}
