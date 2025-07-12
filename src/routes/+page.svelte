@@ -5,7 +5,11 @@
 	let timeGoal = $state(30);
 	let prompt = $state("");
 
-	const startTimer = (setTime: Temporal.Duration) => {};
+	let timerState = $state({
+		started: false,
+		secondsLeft: 0,
+		roundsFinished: 0,
+	});
 
 	const computeSetTime = (timeGoalNumber: number, setsGoalNumber: number) => {
 		const timeGoal = Temporal.Duration.from({ minutes: timeGoalNumber });
@@ -23,32 +27,32 @@
 		setTime.minutes * 60 * setsGoal + setTime.seconds * setsGoal,
 	);
 
-	let tick = $state(0);
-	let countdownSeconds = $state(0);
-	let countdownStarted = $state(false);
 	let timerId: number | undefined = undefined;
-	let roundsFinished = $state("");
-	let numRoundsFinished = $state(0);
 
 	const handleClick = () => {
-		countdownStarted = true;
-		countdownSeconds = setTime.minutes * 60 + setTime.seconds;
-		roundsFinished = "";
-		numRoundsFinished = 0;
+		timerState = {
+			...timerState,
+			started: true,
+			secondsLeft: setTime.minutes * 60 + setTime.seconds,
+		};
 		prompt = "running...";
 		if (timerId) {
 			clearInterval(timerId);
 		}
 		timerId = setInterval(() => {
-			tick = tick + 1;
-			countdownSeconds -= 1;
+			timerState = {
+				...timerState,
+				secondsLeft: timerState.secondsLeft - 1,
+			};
 
-			if (countdownSeconds === 0) {
-				roundsFinished += "✅";
-				numRoundsFinished += 1;
-				countdownSeconds = setTime.minutes * 60 + setTime.seconds;
+			if (timerState.secondsLeft === 0) {
+				timerState = {
+					started: true,
+					secondsLeft: setTime.minutes * 60 + setTime.seconds,
+					roundsFinished: timerState.roundsFinished + 1,
+				};
 
-				if (numRoundsFinished == setsGoal) {
+				if (timerState.roundsFinished == setsGoal) {
 					prompt = "done!";
 					clearInterval(timerId);
 				}
@@ -79,22 +83,27 @@
 <div>
 	{prompt}
 </div>
-{#if countdownStarted}
+{#if timerState.started}
 	<div id="running-countdown-info">
 		<div>
-			{roundsFinished}
-			{#if numRoundsFinished > 0}
-				({numRoundsFinished})
+			{Array.from(
+				{ length: timerState.roundsFinished },
+				(_) => "✅",
+			).join("")}
+			{#if timerState.roundsFinished > 0}
+				{timerState.roundsFinished}
+			{/if}
+			{#if timerState.roundsFinished < setsGoal}
+				🏋 ({timerState.roundsFinished + 1})
 			{/if}
 		</div>
 		<div id="countdown-number">
-			{countdownSeconds}
+			{timerState.secondsLeft}
 		</div>
 	</div>
 {/if}
 
 <style>
-	p,
 	div {
 		font-size: 1.5em;
 		font-family: Georgia, "Times New Roman", Times, serif;
@@ -105,8 +114,6 @@
 		width: 200px;
 	}
 
-	#form {
-	}
 	#countdown-number {
 		font-size: 20em;
 	}
